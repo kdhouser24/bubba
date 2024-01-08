@@ -1,0 +1,4 @@
+* Root File
+** Links
+[[file:other.org]]
+
