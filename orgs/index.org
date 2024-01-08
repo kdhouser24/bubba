@@ -1,4 +1,62 @@
 * Root File
 ** Links
 [[file:other.org]]
+** Diagrams
 
+#+begin_src plantuml :file img/upgrade-redundant-apex-annotated.png
+@startuml
+
+State_1 : Primary: Active [N]
+State_1 : Secondary: Standby [N]
+
+State_2 : Primary: Loading [N+1]
+State_2 : Secondary: Active [N]
+
+State_3 : Primary: Standby [N+1]
+State_3 : Secondary: Active [N]
+
+State_4 : Primary: Active [N+1]
+State_4 : Secondary: Loading [N+1]
+
+State_5 : Primary: Active [N+1]
+State_5 : Secondary: Standby [N+1]
+
+title Upgrading Chassis Redundant Pairs
+
+[*]     --> State_1
+State_1 --> State_2 : Beg Pri DL
+State_2 --> State_3 : End Pri DL
+State_3 --> State_4 : Beg Sec DL
+State_4 --> State_5 : End Sec DL
+State_5 --> [*]
+
+note right of State_2
+Secondary loses Heartbeat contact with Primary.
+Therefore Secondary becomes Active.
+end note
+
+note right of State_3
+Heartbeat contact resumes but versions don't match.
+But as of APEX 2.5.0 according to release notes:
+    "...when a GigE/QAM configuration mismatch occurs,
+    the ACTIVE APEX will not go into a FAULT state and
+    continue to source the Video."
+Therefore Secondary stays Active.
+end note
+
+note right of State_4
+Primary loses Heartbeat contact with Secondary
+and can no longer see that versions don't match.
+Therefore Primary becomes Active.
+end note
+
+note right of State_5
+Heartbeat contact resumes and versions match,
+so Secondary enables redundancy but enters Standby.
+end note
+
+@enduml
+#+end_src
+
+#+RESULTS:
+[[file:img/upgrade-redundant-apex-annotated.png]]
